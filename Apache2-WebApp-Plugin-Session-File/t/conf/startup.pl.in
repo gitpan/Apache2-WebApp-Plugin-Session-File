@@ -1,8 +1,0 @@
-# -*- perl -*-
-
-#!perl
-
-use lib '@ServerRoot@/app';
-use Test;
-
-1;
