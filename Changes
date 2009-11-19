@@ -7,4 +7,8 @@ Revision history for Perl module Apache2::WebApp::Plugin::Session::File
     - Fixed bug in get() method.  Added missing parameter (optional => 1)
 
 0.03 Fri Nov 13 00:31:15 2009
-    - No changes.  PAUSE indexer issues. 
+    - No changes.  PAUSE indexer issues.
+
+0.04 Wed Nov 18 21:24:34 2009
+    - Added set cookie to the create() method.
+    - Removed $id argument from get() method.
