@@ -53,6 +53,7 @@ CONFIGURATION
 
       [session]
       storage_type = file
+      expires = 1h
 
 OBJECT METHODS
     Please refer to Apache2::WebApp::Plugin::Session for method info.
