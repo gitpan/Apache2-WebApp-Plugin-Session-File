@@ -22,7 +22,7 @@ use Apache::Session::Lock::File;
 use File::Path;
 use Params::Validate qw( :all );
 
-our $VERSION = 0.07;
+our $VERSION = 0.08;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~[  OBJECT METHODS  ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
