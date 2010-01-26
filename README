@@ -10,7 +10,8 @@ SYNOPSIS
       $c->plugin('Session')->method( ... );
 
 DESCRIPTION
-    Store persistent data on the filesystem.
+    Store persistent data on the filesystem while maintaining a stateful
+    session using web browser cookies.
 
 PREREQUISITES
     This package is part of a larger distribution and was NOT intended to be
@@ -35,7 +36,7 @@ INSTALLATION
 
     Perl one liner using CPAN.pm:
 
-      perl -MCPAN -e 'install Apache2::WebApp::Plugin::Session::File'
+      $ perl -MCPAN -e 'install Apache2::WebApp::Plugin::Session::File'
 
     Use of CPAN.pm in interactive mode:
 
