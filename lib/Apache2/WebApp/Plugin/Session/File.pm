@@ -23,7 +23,7 @@ use Apache::Session::Lock::File;
 use File::Path;
 use Params::Validate qw( :all );
 
-our $VERSION = 0.11;
+our $VERSION = 0.12;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~[  OBJECT METHODS  ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -40,7 +40,7 @@ sub new {
 #----------------------------------------------------------------------------+
 # create( \%controller, $name, \%data )
 #
-# Create a new file based session.
+# Create a new file based session and set a web browser cookie.
 
 sub create {
     my ( $self, $c, $name, $data_ref )
@@ -50,6 +50,9 @@ sub create {
           { type => SCALAR  },
           { type => HASHREF }
           );
+
+    $self->error('Invalid session name')
+      unless ( $name =~ /^[\w]{20}$/ );
 
     my $doc_root = $c->config->{apache_doc_root};
 
@@ -100,12 +103,13 @@ sub create {
 }
 
 #----------------------------------------------------------------------------+
-# get( \%controller, $name )
+# get( \%controller, $arg )
 #
-# Return session data as a hash reference.
+# Takes the cookie unique identifier or session id as arguments.  Returns
+# the session data as a hash reference.  
 
 sub get {
-    my ( $self, $c, $name )
+    my ( $self, $c, $arg )
       = validate_pos( @_,
           { type => OBJECT  },
           { type => HASHREF },
@@ -114,16 +118,19 @@ sub get {
 
     my $doc_root = $c->config->{apache_doc_root};
 
-    my $cookie = $c->plugin('Cookie')->get($name);
+    my $cookie = $c->plugin('Cookie')->get($arg);
 
-    my $session_id = ($cookie) ? $cookie : "null";
+    my $id = ($cookie) ? $cookie : $arg;
+
+    $self->error('Malformed session identifier')
+      unless ( $id =~ /^[a-zA-Z]{32}$/ );
 
     my %session;
 
     eval {
-        tie %session, 'Apache::Session::File', $session_id, {
-            Directory     => "$doc_root/tmp/$name/session",
-            LockDirectory => "$doc_root/tmp/$name/lock",
+        tie %session, 'Apache::Session::File', $id, {
+            Directory     => "$doc_root/tmp/$arg/session",
+            LockDirectory => "$doc_root/tmp/$arg/lock",
         };
     };
 
@@ -139,12 +146,13 @@ sub get {
 }
 
 #----------------------------------------------------------------------------+
-# delete( \%controller, $name )
+# delete( \%controller, $arg )
 #
-# Delete an existing session.
+# Takes the cookie unique identifier or session id as arguments.  Deletes
+# an existing session.
 
 sub delete {
-    my ( $self, $c, $name )
+    my ( $self, $c, $arg )
       = validate_pos( @_,
           { type => OBJECT  },
           { type => HASHREF },
@@ -153,35 +161,39 @@ sub delete {
 
     my $doc_root = $c->config->{apache_doc_root};
 
-    my $cookie = $c->plugin('Cookie')->get($name);
+    my $cookie = $c->plugin('Cookie')->get($arg);
 
-    my $id = ($cookie) ? $cookie : "null";
+    my $id = ($cookie) ? $cookie : $arg;
+
+    $self->error('Malformed session identifier')
+      unless ( $id =~ /^[a-zA-Z]{32}$/ );
 
     my %session;
 
     eval {
         tie %session, 'Apache::Session::File', $id, {
-            Directory     => "$doc_root/tmp/$name/session",
-            LockDirectory => "$doc_root/tmp/$name/lock",
+            Directory     => "$doc_root/tmp/$arg/session",
+            LockDirectory => "$doc_root/tmp/$arg/lock",
         };
     };
 
     unless ($@) {
         tied(%session)->delete;
 
-        $c->plugin('Cookie')->delete( $c, $name );
+        $c->plugin('Cookie')->delete( $c, $arg );
     }
 
     return;
 }
 
 #----------------------------------------------------------------------------+
-# update( \%controller, $name, \%data );
+# update( \%controller, $arg, \%data );
 #
-# Update existing session data.
+# Takes the cookie unique identifier or session id as arguments.  Updates
+# existing session data.
 
 sub update {
-    my ( $self, $c, $name, $data_ref )
+    my ( $self, $c, $arg, $data_ref )
       = validate_pos( @_,
           { type => OBJECT  },
           { type => HASHREF },
@@ -191,16 +203,19 @@ sub update {
 
     my $doc_root = $c->config->{apache_doc_root};
 
-    my $cookie = $c->plugin('Cookie')->get($name);
+    my $cookie = $c->plugin('Cookie')->get($arg);
 
-    my $id = ($cookie) ? $cookie : "null";
+    my $id = ($cookie) ? $cookie : $arg;
+
+    $self->error('Malformed session identifier')
+      unless ( $id =~ /^[a-zA-Z]{32}$/ );
 
     my %session;
 
     eval {
         tie %session, 'Apache::Session::File', $id, {
-            Directory     => "$doc_root/tmp/$name/session",
-            LockDirectory => "$doc_root/tmp/$name/lock",
+            Directory     => "$doc_root/tmp/$arg/session",
+            LockDirectory => "$doc_root/tmp/$arg/lock",
         };
     };
 
@@ -220,7 +235,7 @@ sub update {
 #----------------------------------------------------------------------------+
 # id( \%controller, $name )
 #
-# Return the unique identifier for a given session.
+# Return the cookie unique identifier for a given session.
 
 sub id {
     my ( $self, $c, $name )
@@ -295,7 +310,7 @@ Perl one liner using CPAN.pm:
 
 Use of CPAN.pm in interactive mode:
 
-  $> perl -MCPAN -e shell
+  $ perl -MCPAN -e shell
   cpan> install Apache2::WebApp::Plugin::Session::File
   cpan> quit
 
