@@ -23,7 +23,7 @@ use Apache::Session::Lock::File;
 use File::Path;
 use Params::Validate qw( :all );
 
-our $VERSION = 0.12;
+our $VERSION = 0.13;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~[  OBJECT METHODS  ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -52,7 +52,7 @@ sub create {
           );
 
     $self->error('Invalid session name')
-      unless ( $name =~ /^[\w]{20}$/ );
+      unless ( $name =~ /^[\w-]{1,20}$/ );
 
     my $doc_root = $c->config->{apache_doc_root};
 
@@ -78,8 +78,8 @@ sub create {
         tie %session, 'Apache::Session::File', undef, {
             Directory     => $tmp1,
             LockDirectory => $tmp2,
-        };
-    };
+          };
+      };
 
     if ($@) {
         $self->error("Failed to create session: $@");
@@ -116,14 +116,14 @@ sub get {
           { type => SCALAR  }
           );
 
+    $self->error('Malformed session identifier')
+      unless ( $arg =~ /^[\w-]{1,32}$/ );
+
     my $doc_root = $c->config->{apache_doc_root};
 
     my $cookie = $c->plugin('Cookie')->get($arg);
 
     my $id = ($cookie) ? $cookie : $arg;
-
-    $self->error('Malformed session identifier')
-      unless ( $id =~ /^[a-zA-Z]{32}$/ );
 
     my %session;
 
@@ -131,8 +131,8 @@ sub get {
         tie %session, 'Apache::Session::File', $id, {
             Directory     => "$doc_root/tmp/$arg/session",
             LockDirectory => "$doc_root/tmp/$arg/lock",
-        };
-    };
+          };
+      };
 
     unless ($@) {
         my %values = %session;
@@ -159,14 +159,14 @@ sub delete {
           { type => SCALAR  }
           );
 
+    $self->error('Malformed session identifier')
+      unless ( $arg =~ /^[\w-]{32}$/ );
+
     my $doc_root = $c->config->{apache_doc_root};
 
     my $cookie = $c->plugin('Cookie')->get($arg);
 
     my $id = ($cookie) ? $cookie : $arg;
-
-    $self->error('Malformed session identifier')
-      unless ( $id =~ /^[a-zA-Z]{32}$/ );
 
     my %session;
 
@@ -174,8 +174,8 @@ sub delete {
         tie %session, 'Apache::Session::File', $id, {
             Directory     => "$doc_root/tmp/$arg/session",
             LockDirectory => "$doc_root/tmp/$arg/lock",
-        };
-    };
+          };
+      };
 
     unless ($@) {
         tied(%session)->delete;
@@ -201,14 +201,14 @@ sub update {
           { type => HASHREF }
           );
 
-    my $doc_root = $c->config->{apache_doc_root};
+    $self->error('Malformed session identifier')
+      unless ( $arg =~ /^[\w-]{32}$/ );
 
     my $cookie = $c->plugin('Cookie')->get($arg);
 
     my $id = ($cookie) ? $cookie : $arg;
 
-    $self->error('Malformed session identifier')
-      unless ( $id =~ /^[a-zA-Z]{32}$/ );
+    my $doc_root = $c->config->{apache_doc_root};
 
     my %session;
 
@@ -216,8 +216,8 @@ sub update {
         tie %session, 'Apache::Session::File', $id, {
             Directory     => "$doc_root/tmp/$arg/session",
             LockDirectory => "$doc_root/tmp/$arg/lock",
-        };
-    };
+          };
+      };
 
     if ($@) {
         $self->error("Failed to create session: $@");
@@ -244,6 +244,9 @@ sub id {
           { type => HASHREF },
           { type => SCALAR  }
           );
+
+    $self->error('Malformed session identifier')
+      unless ( $name =~ /^[\w-]{32}$/ );
 
     return $c->plugin('Cookie')->get($name);
 }
@@ -301,7 +304,7 @@ From source:
   $ tar xfz Apache2-WebApp-Plugin-Session-File-0.X.X.tar.gz
   $ perl MakeFile.PL PREFIX=~/path/to/custom/dir LIB=~/path/to/custom/lib
   $ make
-  $ make test     <--- Make sure you do this before contacting me
+  $ make test
   $ make install
 
 Perl one liner using CPAN.pm:
