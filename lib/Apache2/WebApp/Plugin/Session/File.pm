@@ -23,7 +23,7 @@ use Apache::Session::Lock::File;
 use File::Path;
 use Params::Validate qw( :all );
 
-our $VERSION = 0.13;
+our $VERSION = 0.14;
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~[  OBJECT METHODS  ]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
@@ -347,6 +347,6 @@ Marc S. Brooks, E<lt>mbrooks@cpan.orgE<gt> - L<http://mbrooks.info>
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/artistic.html>
 
 =cut

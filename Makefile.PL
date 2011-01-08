@@ -23,9 +23,9 @@ WriteMakefile(
         'Apache::Test'                     => 0,
         'Apache::Session::File'            => 1.01,
         'Apache::Session::Lock::File'      => 1.01,
-        'Apache2::WebApp'                  => 0.21,
-        'Apache2::WebApp::Plugin::Cookie'  => 0.05,
-        'Apache2::WebApp::Plugin::Session' => 0.10,
+        'Apache2::WebApp'                  => 0.38,
+        'Apache2::WebApp::Plugin::Cookie'  => 0.09,
+        'Apache2::WebApp::Plugin::Session' => 0.14,
         'Params::Validate'                 => 0,
     },
     clean => {
